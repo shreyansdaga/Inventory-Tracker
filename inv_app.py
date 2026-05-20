@@ -170,10 +170,3 @@ def render_table(item_search, team, category):
         
 
 app.mainloop()
-
-
-"""
-TODO:
-1. Display Error Message if user enters an invalid item name
-3. Make the application scrollable, meaning that all the widgets don't shrink and instead the application becomes scrollable if the window is too small.
-"""
