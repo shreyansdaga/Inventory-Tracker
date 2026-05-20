@@ -63,23 +63,29 @@ main_menu.set("Select Team")
 main_menu.pack(pady=10, side=ctk.TOP)
 
 def set_value(choice):
-    global category
+    global category, item_search
     category = choice
+    item_search = None
+    search.delete(0, "end")
     render_table(item_search, team, category)
 
 sub_menu = ctk.CTkOptionMenu(app, values=["Select Team First"], command=set_value)
 sub_menu.pack(pady=10)
 
 # Table Code
-table_frame = ctk.CTkFrame(app)
-table_frame.pack(pady=10, padx=50)
+table_frame = ctk.CTkScrollableFrame(app)
+table_frame.pack(pady=10, padx=50, fill="both", expand=True)
+
+# Error Label
+error_label = ctk.CTkLabel(app, text="", text_color="red")
+error_label.pack()
 
 my_image = ctk.CTkImage(light_image=Image.open("edit.png"), size=(20, 20))
 mode = 0 # 0 - Locked, 1 - Edit
 
 value = [["Item", "Qty on Floor", "Qty in Back", "Par", "Qty to Order"],
             ["", "", "", "", ""],
-            ["", "", "", ""]]
+            ["", "", "", "", ""]]
 table = ctable.CTkTable(table_frame, row=1, column=5, values=value)
 table.pack(padx=50, pady=20)
 
@@ -88,11 +94,11 @@ def update_board():
     global value
     for i in range(1, len(value)):
         for j in range(1, 3):
-            if value[i][j] != int(table.get_row(i)[j]):
-                row_num = find_row(value[i][0])
-                sheet[get_index(row_num, col_num_indexes[j])].value = int(table.get_row(i)[j])
-                sheet[get_index(row_num, col_num_indexes[4])].value = sheet[get_index(row_num, col_num_indexes[3])].value - sheet[get_index(row_num, col_num_indexes[1])].value - sheet[get_index(row_num, col_num_indexes[2])].value # Qty_O Calculation
-                wb.save("inventory.xlsx")
+            row_num = find_row(value[i][0])
+            sheet[get_index(row_num, col_num_indexes[j])].value = int(table.get_row(i)[j])
+            sheet[get_index(row_num, col_num_indexes[4])].value = sheet[get_index(row_num, col_num_indexes[3])].value - sheet[get_index(row_num, col_num_indexes[1])].value - sheet[get_index(row_num, col_num_indexes[2])].value # Qty_O Calculation
+            table.insert(i, 4, value=max(sheet[get_index(row_num, col_num_indexes[4])].value, 0))
+            wb.save("inventory.xlsx")
 
 def edit_button_clicked():
         global mode
@@ -118,18 +124,21 @@ edit_button.pack(pady=10)
 def render_table(item_search, team, category):
     global table
     global value
+    global mode
     row_c = 0
     if item_search != None:
         i = 1
         while True:
             val = sheet[get_index(i, "A")].value
             if val == item_search:
+                error_label.configure(text="")
                 value = [["Item", "Qty on Floor", "Qty in Back", "Par", "Qty to Order"],
                          [sheet[get_index(i, "A")].value, sheet[get_index(i, "B")].value, sheet[get_index(i, "C")].value, sheet[get_index(i, "D")].value, max(int(sheet[get_index(i, "E")].value), 0)]]
                 row_c = 1
                 break
             elif val == None:
-                break #FIXME: Figure out a way to render message saying item not found
+                error_label.configure(text=f"Item '{item_search}' not found.")
+                break
             i += 1
     elif team != None and category != None:
         i = 1
@@ -144,7 +153,9 @@ def render_table(item_search, team, category):
 
     # Put current data from table into excel before refresh
     if mode == 1:
-        edit_button_clicked()
+        update_board()
+        mode = 0
+        edit_button.configure(text="Edit")
 
     table.destroy()
     table = ctable.CTkTable(table_frame, row=row_c+1, column=5, values=value)
