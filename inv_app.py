@@ -37,7 +37,9 @@ label = ctk.CTkLabel(app, text="CATalyst Inventory", fg_color="transparent", fon
 label.pack(pady=10)
 
 def on_return(event):
-    item_search = search.get()
+    global item_search
+    val = search.get().strip()
+    item_search = val if val != "" else None
     render_table(item_search, team, category)
 
 search = ctk.CTkEntry(app, placeholder_text="Search for an item...")
@@ -45,7 +47,7 @@ search.pack(pady=10)
 search.bind("<Return>", on_return)
 
 def update_sub_menu(choice):
-    global team
+    global team, category, item_search
     # Data mapping categories to sub-items
     data = {
         "Fabrication": ["Filament", "Wood", "Acrylic", "Resin"],
@@ -57,6 +59,10 @@ def update_sub_menu(choice):
     team = choice
     sub_menu.configure(values=data[choice])
     sub_menu.set(data[choice][0])
+    category = data[choice][0]
+    item_search = None
+    search.delete(0, "end")
+    render_table(item_search, team, category)
 
 main_menu = ctk.CTkOptionMenu(app, values=["Fabrication", "Fiber Arts", "Multimedia", "Crafting"], command=update_sub_menu, hover=True)
 main_menu.set("Select Team")
@@ -93,12 +99,12 @@ def update_board():
     global table
     global value
     for i in range(1, len(value)):
+        row_num = find_row(value[i][0])
         for j in range(1, 3):
-            row_num = find_row(value[i][0])
             sheet[get_index(row_num, col_num_indexes[j])].value = int(table.get_row(i)[j])
-            sheet[get_index(row_num, col_num_indexes[4])].value = sheet[get_index(row_num, col_num_indexes[3])].value - sheet[get_index(row_num, col_num_indexes[1])].value - sheet[get_index(row_num, col_num_indexes[2])].value # Qty_O Calculation
-            table.insert(i, 4, value=max(sheet[get_index(row_num, col_num_indexes[4])].value, 0))
-            wb.save("inventory.xlsx")
+        sheet[get_index(row_num, col_num_indexes[4])].value = sheet[get_index(row_num, col_num_indexes[3])].value - sheet[get_index(row_num, col_num_indexes[1])].value - sheet[get_index(row_num, col_num_indexes[2])].value # Qty_O Calculation
+        table.insert(i, 4, value=max(sheet[get_index(row_num, col_num_indexes[4])].value, 0))
+    wb.save("inventory.xlsx")
 
 def edit_button_clicked():
         global mode
@@ -138,7 +144,7 @@ def render_table(item_search, team, category):
                 break
             elif val == None:
                 error_label.configure(text=f"Item '{item_search}' not found.")
-                break
+                return
             i += 1
     elif team != None and category != None:
         i = 1
