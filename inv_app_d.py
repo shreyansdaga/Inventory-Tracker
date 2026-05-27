@@ -35,9 +35,6 @@ engine = sqa.create_engine(DATABASE_URL)
 
 with sqa_orm.Session(engine) as session:
     inventory_items = session.query(User).all()
-    for row in inventory_items:
-        print(row.item, row.qty_f, row.qty_b, row.qty_o, row.par)
-
 
 def find_row(val):
     global inventory_items
@@ -73,12 +70,14 @@ def update_sub_menu(choice):
         "Crafting": ["Screen Printing", "Roland", "Crafting Cabinets", "Buttons"]
     }
 
+    sub_menu.configure(fg_color=("#3a7ebf", "#1f538d"))
     team = choice
     sub_menu.configure(values=data[choice])
     sub_menu.set(data[choice][0])
     category = data[choice][0]
     item_search = None
-    search.delete(0, "end")
+    if search.get() != "":
+        search.delete(0, "end")
     render_table(item_search, team, category)
 
 main_menu = ctk.CTkOptionMenu(app, values=["Fabrication", "Fiber Arts", "Multimedia", "Crafting"], command=update_sub_menu, hover=True)
@@ -86,13 +85,14 @@ main_menu.set("Select Team")
 main_menu.pack(pady=10, side=ctk.TOP)
 
 def set_search_value(choice):
-    global category, item_search
+    global category, item_search, sub_menu
     category = choice
     item_search = None
-    search.delete(0, "end")
+    if search.get() != "":
+        search.delete(0, "end")
     render_table(item_search, team, category)
 
-sub_menu = ctk.CTkOptionMenu(app, values=["Select Team First"], command=set_search_value)
+sub_menu = ctk.CTkOptionMenu(app, values=["Select Team First"], command=set_search_value, fg_color="#6C6C6C")
 sub_menu.pack(pady=10)
 
 # Table Code
