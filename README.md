@@ -65,7 +65,3 @@ pip install customtkinter CTkTable pillow openpyxl sqlalchemy psycopg2
 python inventory_tracker.py
 ```
 Follow the on-screen prompts to add, update, or check inventory levels against a low-stock threshold.
-
-## Project Status
-
-Actively developed as a student-worker project for CATalyst Studios, with an ongoing migration from an Excel-based backend to PostgreSQL for more reliable, concurrent inventory tracking.
