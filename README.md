@@ -69,7 +69,3 @@ Follow the on-screen prompts to add, update, or check inventory levels against a
 ## Project Status
 
 Actively developed as a student-worker project for CATalyst Studios, with an ongoing migration from an Excel-based backend to PostgreSQL for more reliable, concurrent inventory tracking.
-
-## License
-
-No license specified.
